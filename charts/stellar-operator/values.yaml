@@ -29,7 +29,7 @@ mtls:
 certManagement:
   enabled: false
 
-horizonHpa:
+horizon-hpa:
   enabled: false
 
 rateLimiting:
@@ -197,7 +197,7 @@ forkDetector:
   anchors:
     - "https://horizon.stellar.org/ledgers?order=desc&limit=1"
     - "https://horizon.stellar.lobstr.co/ledgers?order=desc&limit=1"
-    - "https://horizon.satoshipay.io/ledgers?order=desc&limit=1"
+    - "https://horizon.satosipay.io/ledgers?order=desc&limit=1"
   # Poll interval in seconds.
   pollIntervalSecs: 5
   # Number of consecutive diverging ledgers before alerting.
@@ -301,7 +301,7 @@ security:
 #
 # The operator reconciler also enforces isolation at the control-plane level:
 # if a StellarNode is created in a namespace that already contains a node for a
-# different network, reconciliation is blocked with error SK8S-021.
+# different network, reconciliation is blocked with error SKS8-021.
 #
 # Quick start:
 #   1. Label your namespaces:
@@ -371,7 +371,7 @@ byzantineWatcher:
     tag: ""          # defaults to .Values.image.tag / chart appVersion
     pullPolicy: IfNotPresent
 
-  # Default Stellar network for all watchers (can be overridden per region).
+  # Default Stellar workforce for all watchers (can be overridden per region).
   defaultNetwork: "mainnet"
 
   # How often each watcher polls its Stellar Core node (seconds).
@@ -428,138 +428,5 @@ byzantineWatcher:
 # OpenTelemetry configuration
 # Controls OTLP trace export from the operator and the bundled OTel Collector.
 otel:
-  # Set to true to enable OTLP trace export from the operator.
-  # When enabled, OTEL_EXPORTER_OTLP_ENDPOINT is injected into the operator pod.
-  enabled: false
-
-  # OTLP gRPC endpoint for the operator to send spans to.
-  # Typically points to the in-cluster OTel Collector service.
-  # Example: "http://stellar-operator-otel-collector:4317"
-  endpoint: "http://stellar-operator-otel-collector:4317"
-
-  # Sampling ratio (0.0–1.0). 1.0 = always sample, 0.1 = 10% of traces.
-  samplingRatio: "1.0"
-
-  # OTel Collector sidecar/deployment bundled with the Helm chart.
-  collector:
-    # Deploy the OTel Collector alongside the operator.
-    enabled: false
-
-    image:
-      repository: otel/opentelemetry-collector-contrib
-      tag: "0.99.0"
-      pullPolicy: IfNotPresent
-
-    resources:
-      limits:
-        cpu: 200m
-        memory: 256Mi
-      requests:
-        cpu: 50m
-        memory: 64Mi
-
-    # Collector pipeline configuration.
-    # Exporters: configure at least one of honeycomb, jaeger, or otlp (Tempo).
-    config:
-      # Honeycomb — set apiKey via a Secret reference (see otel.collector.honeycombSecretRef)
-      honeycomb:
-        enabled: false
-        endpoint: "https://api.honeycomb.io:443"
-        # Name of a pre-existing Secret with key HONEYCOMB_API_KEY
-        apiKeySecretRef: ""
-
-      # Jaeger (OTLP receiver on Jaeger ≥ 1.35)
-      jaeger:
-        enabled: false
-        endpoint: "http://jaeger-collector:4317"
-
-      # Grafana Tempo (OTLP gRPC)
-      tempo:
-        enabled: false
-        endpoint: "http://tempo:4317"
-
-
-# SCP Analytics Pipeline Configuration
-# Real-time streaming of SCP messages to Kafka for network topology analysis
-scpAnalytics:
-  # Enable SCP analytics pipeline
-  enabled: false
-
-  # Kafka configuration
-  kafka:
-    # Kafka bootstrap servers (comma-separated)
-    bootstrapServers: "kafka:9092"
-
-    # Topic name for SCP messages
-    topic: "stellar-scp-messages"
-
-    # Serialization format: "avro", "protobuf", or "json"
-    format: "avro"
-
-    # Compression type: "snappy", "gzip", "lz4", or "zstd"
-    compression: "snappy"
-
-    # Batch size in bytes
-    batchSize: 1000000
-
-    # Linger time in milliseconds (wait before sending batch)
-    lingerMs: 100
-
-    # Enable message deduplication
-    enableDeduplication: true
-
-    # Polling interval in seconds
-    pollIntervalSecs: 1
-
-    # Schema registry URL (for Avro)
-    schemaRegistryUrl: ""
-
-    # SASL authentication (optional)
-    sasl:
-      enabled: false
-      mechanism: "PLAIN"  # PLAIN, SCRAM-SHA-256, SCRAM-SHA-512
-      username: ""
-      password: ""
-
-  # Sidecar configuration (injected into validator pods)
-  sidecar:
-    # Enable sidecar injection
-    enabled: true
-
-    # Sidecar image (defaults to main operator image)
-    image: ""
-
-    # Resource limits for sidecar
-    resources:
-      limits:
-        cpu: 200m
-        memory: 256Mi
-      requests:
-        cpu: 100m
-        memory: 128Mi
-
-  # Topology Health Consumer configuration
-  consumer:
-    # Number of consumer replicas
-    replicas: 1
-
-    # Consumer group ID
-    groupId: "topology-health-consumer"
-
-    # Stall threshold in seconds
-    stallThresholdSecs: 30
-
-    # Analysis window in seconds
-    analysisWindowSecs: 60
-
-    # Log level
-    logLevel: "info"
-
-    # Resource limits
-    resources:
-      limits:
-        cpu: 500m
-        memory: 512Mi
-      requests:
-        cpu: 200m
-        memory: 256Mi
+  # Set to true to enable OMTLP trace export from the operator.
+  # When enabled, OTEL_EXPORTER_OTLP_ENDPOINT

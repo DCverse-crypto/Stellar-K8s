@@ -1,6 +1,6 @@
-# Stellar-K8s security hardening and least-privilege RBAC
+# Kubernetes RBAC Security Hardening & Least-Privilege Manual
 
-This reference defines a deployable least-privilege profile for the stock `stellar-k8s run` process. The companion manifest is [`examples/security/strict-rbac.yaml`](../../examples/security/strict-rbac.yaml); the companion audit is [`examples/security/audit-rbac.sh`](../../examples/security/audit-rbac.sh).
+This manual defines a deployable least-privilege profile for the stock `stellar-k8s run` process. The companion manifest is [`examples/security/strict-rbac.yaml`](../../examples/security/strict-rbac.yaml); the companion audit is [`examples/security/audit-rbac.sh`](../../examples/security/audit-rbac.sh).
 
 The reference deployment assumes:
 
@@ -18,6 +18,8 @@ The strict profile has no RBAC wildcards. It does not allow the operator Service
 
 A small read-only ClusterRole is unavoidable in the **current stock binary** because some startup/background paths ignore `--watch-namespace`. That architectural limitation is documented explicitly below rather than hidden behind a broad write-capable ClusterRole.
 
+Every rule in the strict profile is justified below against a concrete code path. Rules that cannot be tied to a required API call are omitted; if a future change adds a call, add the narrowest rule that satisfies it and re-run the audit gate.
+
 ## Current stock-binary scope limitation
 
 `--watch-namespace` correctly scopes the primary `StellarNode` controller, but `run_operator()` also starts several paths with cluster-wide API clients:
@@ -32,6 +34,8 @@ Therefore a stock process cannot be both completely cross-namespace blind and fr
 If your security boundary forbids even those cross-namespace reads, the correct fix is to make preflight/peer-discovery/benchmark/snapshot workers namespace-aware or independently disableable. Do not compensate by granting more cluster-wide write access.
 
 The stock peer-discovery manager writes `stellar-peers` in `stellar-system`, so this reference uses `stellar-system` as the operator namespace.
+
+The tables below are the authoritative permission map. Each row lists the API group/resource, the verbs granted, and the specific operator code path that requires them. Any rule not listed here is intentionally denied.
 
 ## Exact permission map
 
@@ -93,6 +97,8 @@ plus a separate `patch` rule restricted to `resourceNames: ["stellar"]`. Namespa
 
 Local-storage auto-detection probes only StorageClasses named `local-path` and `local-storage`, so the reference grants `get` only on those two names. If every node sets `spec.storage.storageClass`, remove that ClusterRole/binding.
 
+No other cluster-scoped resources are granted. In particular, the profile does not grant `create`, `delete`, or `patch` on Namespaces, Nodes, PersistentVolumes, StorageClasses, or CustomResourceDefinitions.
+
 ## Restricted Pod Security Standards
 
 The **node workload namespace** `stellar` is labelled `restricted` for enforce/audit/warn. The operator namespace is audit/warn only: the current Helm operator pod values do not assert every field required for `restricted` enforcement, and this issue is about enforcing PSS on namespaces that run node workloads, not hiding a chart incompatibility.
@@ -100,6 +106,9 @@ The **node workload namespace** `stellar` is labelled `restricted` for enforce/a
 Before switching an existing workload namespace to enforcement, first run audit/warn and fix violations. Pod Security Admission validates new/updated pods; it does not rewrite existing pods.
 
 Managed StellarNode pods already receive non-root execution, `RuntimeDefault` seccomp, `allowPrivilegeEscalation: false`, and `capabilities.drop: [ALL]` from the controller builders.
+
+To enforce `restricted` on the workload namespace, label it explicitly and verify admission behaviour before promoting to enforce:
+
 
 The forensic snapshot ephemeral container is a deliberate exception: it may request `NET_RAW`/`SYS_PTRACE`, which a `restricted` namespace can reject. Treat it as break-glass. Keep it disabled in the strict production profile or use a separately governed diagnostic path; do not weaken production PSS just to make diagnostics convenient.
 

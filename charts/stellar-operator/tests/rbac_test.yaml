@@ -22,6 +22,36 @@ tests:
             resources: ["stellarnodes"]
             verbs: ["get", "list", "watch", "create", "update", "patch", "delete"]
 
+  - it: ClusterRole does not grant cluster-wide secrets access
+    documentIndex: 0
+    asserts:
+      - notContains:
+          path: rules
+          content:
+            apiGroups: [""]
+            resources: ["secrets"]
+            verbs: ["get", "list", "watch"]
+
+  - it: ClusterRole does not grant cluster-wide pods access
+    documentIndex: 0
+    asserts:
+      - notContains:
+          path: rules
+          content:
+            apiGroups: [""]
+            resources: ["pods"]
+            verbs: ["get", "list", "watch"]
+
+  - it: ClusterRole does not grant wildcard verbs
+    documentIndex: 0
+    asserts:
+      - notContains:
+          path: rules
+          content:
+            apiGroups: ["*"]
+            resources: ["*"]
+            verbs: ["*"]
+
   - it: ClusterRole has stellarnodes/status rules
     documentIndex: 0
     asserts:

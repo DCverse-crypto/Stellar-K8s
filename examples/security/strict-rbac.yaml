@@ -1,0 +1,13 @@
+---
+# Strict least-privilege RBAC for the Stellar K8s operator.
+#
+# This manifest implements the profile described in
+# docs/security/rbac-hardening.md. It is designed to be applied INSTEAD
+# of any broader generated ClusterRole. RBAC is additive, so leaving an
+# old broad binding in place defeats the exercise.
+#
+# Assumed deployment:
+#   - operator namespace: stellar-system
+#   - managed workload namespace: stellar
+#   - operator ServiceAccount: stellar-operator
+#   - --watch-namespace=stellar
